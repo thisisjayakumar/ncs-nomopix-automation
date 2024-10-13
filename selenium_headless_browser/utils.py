@@ -8,9 +8,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 
-driver = webdriver.Chrome(ChromeDriverManager().install())
-
-
 def setup_driver():
     """Initializes the Chrome driver with options."""
     chrome_options = Options()
