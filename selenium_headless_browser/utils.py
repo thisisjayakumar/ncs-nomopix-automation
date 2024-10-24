@@ -1,114 +1,150 @@
+import logging
 import concurrent.futures
-import time
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.chrome import ChromeDriverManager
+from typing import List, Dict, Any
+from dataclasses import dataclass
+import requests
+from bs4 import BeautifulSoup
 
-def setup_driver():
-    """Initializes the Chrome driver with options."""
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
-    return driver
+logger = logging.getLogger(__name__)
 
 
-def accept_license(driver):
-    """Accept the license agreement."""
-    try:
-        accept_button = WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.ID, "Accept"))
-        )
-        accept_button.click()
-        print("License agreement accepted.")
-    except Exception as e:
-        print("Error accepting license agreement:", e)
+@dataclass
+class SearchResult:
+    input_number: str
+    headers: List[str]
+    data: List[List[str]]
 
 
-def perform_search(driver, input_number):
-    """Perform a search for a given input number and return the results."""
-    try:
-        search_input = driver.find_element(By.NAME, "txtProcCode")
-        search_input.clear()
-        search_input.send_keys(str(input_number))
+class MedicareProcessor:
+    def __init__(self):
+        self.base_url = "https://www.cgsmedicare.com/medicare_dynamic/j15/ptpb/ptp/ptp.aspx"
+        self.headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
 
-        search_button = WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.NAME, "Button1"))
-        )
-        search_button.click()
+    def _get_form_data(self, response_text: str) -> Dict[str, str]:
+        """Extract hidden form fields from the page."""
+        soup = BeautifulSoup(response_text, 'html.parser')
+        return {
+            '__VIEWSTATE': soup.find('input', {'id': '__VIEWSTATE'})['value'],
+            '__VIEWSTATEGENERATOR': soup.find('input', {'id': '__VIEWSTATEGENERATOR'})['value'],
+            '__EVENTVALIDATION': soup.find('input', {'id': '__EVENTVALIDATION'})['value']
+        }
 
-        wait = WebDriverWait(driver, 5)
-        table = wait.until(EC.presence_of_element_located((By.ID, "DataGrid1")))
-        
-        if table:
-            return parse_table(table)
-        else:
+    def _parse_table(self, soup: BeautifulSoup) -> List[List[str]]:
+        """Parse the results table from the response."""
+        table = soup.find('table', {'id': 'DataGrid1'})
+        if not table:
             return [["Code Not Found"]]
-    
-    except Exception as e:
-        print(f"Error searching for {input_number}: {e}")
-        return [["Code Not Found"]]
+
+        rows = table.find_all('tr')
+        if len(rows) <= 1:
+            return [["Code Not Found"]]
+
+        return [[cell.text.strip() for cell in row.find_all('td')] for row in rows]
+
+    def search_single_code(self, input_number: str) -> SearchResult:
+        """Process a single procedure code."""
+        try:
+            session = requests.Session()
+
+            # Initial page load
+            response = session.get(self.base_url, headers=self.headers)
+            form_data = self._get_form_data(response.text)
+
+            # Accept license
+            form_data['Accept'] = 'Accept'
+            session.post(self.base_url, data=form_data, headers=self.headers)
+
+            # Perform search
+            form_data = self._get_form_data(response.text)
+            form_data.update({
+                'txtProcCode': str(input_number),
+                'Button1': 'Search'
+            })
+
+            response = session.post(self.base_url, data=form_data, headers=self.headers)
+            results = self._parse_table(BeautifulSoup(response.text, 'html.parser'))
+
+            headers = results[0] if results and results[0] != ["Code Not Found"] else []
+            data = results[1:] if results and results[0] != ["Code Not Found"] else results
+
+            return SearchResult(
+                input_number=input_number,
+                headers=headers,
+                data=data
+            )
+
+        except Exception as e:
+            logger.error(f"Error processing code {input_number}: {str(e)}")
+            return SearchResult(
+                input_number=input_number,
+                headers=[],
+                data=[["Code Not Found"]]
+            )
 
 
-def parse_table(table):
-    """Parses the result table and extracts rows of data, excluding header if no data is present."""
-    rows = table.find_elements(By.TAG_NAME, "tr")
-    current_results = []
-    
-    if len(rows) > 1:
-        for row in rows:
-            cells = row.find_elements(By.TAG_NAME, "td")
-            row_data = [cell.text for cell in cells]
-            current_results.append(row_data)
-        
-        return current_results
-    else:
-        return [["Code Not Found"]]
-
-
-def search_single_input(input_number):
-    """Each search will have its own WebDriver instance."""
-    driver = setup_driver()  # Setup a new WebDriver instance
-    driver.get("https://www.cgsmedicare.com/medicare_dynamic/j15/ptpb/ptp/ptp.aspx")
-    accept_license(driver)  # Accept the license agreement
-
-    time.sleep(2)  # Add a delay between searches
-    result = perform_search(driver, input_number)
-    
-    driver.quit()  # Quit WebDriver instance after task
-    return {
-        'input_number': input_number,
-        'results': result
-    }
-
-
-def search_query_script(input_numbers):
-    start_time = time.perf_counter()
-    
+def process_codes_concurrent(input_numbers: List[str]) -> List[Dict[str, Any]]:
+    """Process multiple codes concurrently."""
+    processor = MedicareProcessor()
     results = []
-    
-    # Parallelize searches using thread pool executor
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        future_to_input = {executor.submit(search_single_input, num): num for num in input_numbers}
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        future_to_input = {
+            executor.submit(processor.search_single_code, num): num
+            for num in input_numbers
+        }
+
         for future in concurrent.futures.as_completed(future_to_input):
-            input_number = future_to_input[future]
             try:
                 result = future.result()
-                results.append(result)
+                results.append({
+                    'input_number': result.input_number,
+                    'headers': result.headers,
+                    'results': result.data
+                })
             except Exception as e:
-                print(f"Search failed for {input_number}: {e}")
+                input_number = future_to_input[future]
+                logger.error(f"Failed to process {input_number}: {str(e)}")
                 results.append({
                     'input_number': input_number,
+                    'headers': [],
                     'results': [["Code Not Found"]]
                 })
-    
-    end_time = time.perf_counter()
-    elapsed_time = end_time - start_time
-    print(f"Elapsed time: {elapsed_time:.6f} seconds")
+
     return results
+
+
+def filter_major_minor_codes(results: List[Dict[str, Any]], input_numbers: List[str]) -> List[Dict[str, Any]]:
+    """Filter results based on major/minor code matching logic."""
+    filtered_results = []
+    input_numbers_str = [str(num) for num in input_numbers]
+
+    for result in results:
+        major_code = str(result['input_number'])
+        result_data = result['results']
+        headers = result.get('headers', [])
+
+        if not result_data or result_data[0] == ["Code Not Found"]:
+            continue
+
+        matching_rows = []
+        for row in result_data:
+            if len(row) > 1:
+                minor_code = row[1]
+                if minor_code in input_numbers_str:
+                    matching_rows.append({
+                        'major_code': major_code,
+                        'minor_code': minor_code,
+                        'data': row
+                    })
+
+        if matching_rows:
+            filtered_results.append({
+                'input_number': major_code,
+                'headers': headers,
+                'results': matching_rows
+            })
+
+    return filtered_results
+
