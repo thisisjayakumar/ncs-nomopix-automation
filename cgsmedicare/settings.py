@@ -78,10 +78,27 @@ WSGI_APPLICATION = 'cgsmedicare.wsgi.application'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 import os
-import dj_database_url
 
+DB_BACKEND = os.environ.get('DB_BACKEND', "django.db.backends.mysql")
+
+# Database
+# https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 DATABASES = {
-    'default': dj_database_url.config(default=os.environ.get('DATABASE_URL'))
+    'default': {
+        'ENGINE': DB_BACKEND,
+        'HOST': os.environ.get('DB_HOST'),
+        'PORT': os.environ.get('DB_PORT'),
+        'NAME': os.environ.get('DB_NAME'),
+        'USER': os.environ.get('DB_USER'),
+        'PASSWORD': os.environ.get('DB_PASSWORD'),
+        'CONN_MAX_AGE': 210,
+        'POOL_OPTIONS': {
+            'POOL_SIZE': 5,
+            'MAX_OVERFLOW': 5,
+            'RECYCLE': 210
+        },
+        'OPTIONS': {'charset': 'utf8mb4'},
+    },
 }
 
 AUTH_USER_MODEL = 'users.User'
