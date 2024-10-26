@@ -73,7 +73,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'cgsmedicare.wsgi.application'
 
-DB_BACKEND = os.environ.get('DB_BACKEND', "django.db.backends.mysql")
+DB_BACKEND = os.environ.get('DB_BACKEND', "django.db.backends.postgresql")
 
 DATABASES = {
     'default': {
@@ -83,12 +83,12 @@ DATABASES = {
         'NAME': os.environ.get('DB_NAME'),
         'USER': os.environ.get('DB_USER'),
         'PASSWORD': os.environ.get('DB_PASSWORD'),
-        'CONN_MAX_AGE': 210,
-        'POOL_OPTIONS': {
-            'POOL_SIZE': 5,
-            'MAX_OVERFLOW': 5,
-            'RECYCLE': 210
-        }
+        # 'CONN_MAX_AGE': 210,
+        # 'POOL_OPTIONS': {
+        #     'POOL_SIZE': 5,
+        #     'MAX_OVERFLOW': 5,
+        #     'RECYCLE': 210
+        # }
     },
 }
 
