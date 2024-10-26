@@ -73,16 +73,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'cgsmedicare.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-
-import os
-
 DB_BACKEND = os.environ.get('DB_BACKEND', "django.db.backends.mysql")
 
-# Database
-# https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 DATABASES = {
     'default': {
         'ENGINE': DB_BACKEND,
@@ -96,8 +88,7 @@ DATABASES = {
             'POOL_SIZE': 5,
             'MAX_OVERFLOW': 5,
             'RECYCLE': 210
-        },
-        'OPTIONS': {'charset': 'utf8mb4'},
+        }
     },
 }
 
