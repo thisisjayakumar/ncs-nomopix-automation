@@ -3,6 +3,7 @@ beautifulsoup4==4.12.3
 bs4
 certifi==2024.8.30
 python-dotenv
+httpie
 Django==5.1.2
 gunicorn==23.0.0
 idna==3.10
