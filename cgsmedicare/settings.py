@@ -30,7 +30,7 @@ except KeyError as e:
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "True") == "True"
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['ncsbackend.nomopix.in']
 
 
 # Application definition
