@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 import os
+import json
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -62,7 +63,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'cgsmedicare.urls'
 
-CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_ORIGINS")
+CORS_ALLOWED_ORIGINS = json.loads(os.environ.get("CORS_ALLOWED_ORIGINS", "[]"))
 
 TEMPLATES = [
     {
