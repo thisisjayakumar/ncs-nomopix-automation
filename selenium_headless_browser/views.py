@@ -1,3 +1,5 @@
+from nis import match
+
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
@@ -16,11 +18,11 @@ def run_medicare_search(request):
     try:
         body = json.loads(request.body)
         input_numbers = body.get('input_numbers', [])
-        match_code = request.GET.get('match_code', 'false').lower() == 'true'
+        match_code = request.GET.get('matchCode', 'false').lower() == 'true'
 
         start_time = time.perf_counter()
         results = process_codes_concurrent(input_numbers)
-
+        print("match_code: ", match_code)
         if match_code:
             results = filter_major_minor_codes(results, input_numbers)
 
