@@ -12,8 +12,8 @@ logger = logging.getLogger(__name__)
 
 
 class MedicareSearchView(APIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    # authentication_classes = [JWTAuthentication]
+    # permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
         try:
