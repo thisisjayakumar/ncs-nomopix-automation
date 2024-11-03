@@ -61,6 +61,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'selenium_headless_browser.CachedMiddleware.CachePostRequestsMiddleware',
 ]
 
 ROOT_URLCONF = 'cgsmedicare.urls'
@@ -103,6 +104,13 @@ DATABASES = {
         #     'RECYCLE': 210
         # }
     },
+}
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.PyMemcacheCache',
+        'LOCATION': '127.0.0.1:11211',
+    }
 }
 
 REST_FRAMEWORK = {

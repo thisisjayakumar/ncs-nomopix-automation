@@ -1,42 +1,25 @@
-# Web Framework
-Django==5.1.2
-djangorestframework
-djangorestframework_simplejwt
-
-# ASGI support
 asgiref==3.8.1
-
-# Database Drivers
-mysqlclient
-psycopg2-binary==2.9.10
-
-# SQL Parsing
-sqlparse==0.5.1
-
-# HTTP Client
-httpie
-
-# HTTP Requests
-requests==2.32.0
-
-# Beautiful Soup for HTML parsing
 beautifulsoup4==4.12.3
-
-# Environment Variables
-python-dotenv
-
-# WSGI HTTP Server
-gunicorn==23.0.0
-
-# Type Hinting Extensions
-typing_extensions==4.12.2
-
-# Timezone Data
-tzdata==2024.2
-
-# Certificate Handling
 certifi==2024.8.30
-
-# URL Handling
+charset-normalizer==3.4.0
+Django==5.1.2
+django-cors-headers==4.6.0
+djangorestframework==3.15.2
+djangorestframework-simplejwt==5.3.1
+gunicorn==23.0.0
+httpie==2.2.0
 idna==3.10
+mysqlclient==2.2.5
+packaging==24.1
+psycopg2-binary==2.9.10
+Pygments==2.18.0
+PyJWT==2.9.0
+pymemcache==4.0.0
+python-dotenv==1.0.1
+python-memcached==1.62
+requests==2.32.0
+soupsieve==2.6
+sqlparse==0.5.1
+typing_extensions==4.12.2
+tzdata==2024.2
 urllib3==2.2.3
