@@ -17,9 +17,8 @@ def CreateUser(request):
             username = data.get('username')
             email = data.get('email')
             password = data.get('password')
-            
-            # Basic validation
-            if not username or not email or not password:
+
+            if not email or not password:
                 return JsonResponse({"error": "Missing required fields."}, status=400)
             
             if User.objects.filter(email=email).exists():
