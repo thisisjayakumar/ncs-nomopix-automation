@@ -1,16 +1,42 @@
-asgiref==3.8.1
-beautifulsoup4==4.12.3
-bs4
-certifi==2024.8.30
-python-dotenv
-httpie
+# Web Framework
 Django==5.1.2
-gunicorn==23.0.0
-idna==3.10
-requests==2.31.0
+djangorestframework
+djangorestframework_simplejwt
+
+# ASGI support
+asgiref==3.8.1
+
+# Database Drivers
 mysqlclient
-sqlparse==0.5.1
 psycopg2-binary==2.9.10
+
+# SQL Parsing
+sqlparse==0.5.1
+
+# HTTP Client
+httpie
+
+# HTTP Requests
+requests==2.32.0
+
+# Beautiful Soup for HTML parsing
+beautifulsoup4==4.12.3
+
+# Environment Variables
+python-dotenv
+
+# WSGI HTTP Server
+gunicorn==23.0.0
+
+# Type Hinting Extensions
 typing_extensions==4.12.2
+
+# Timezone Data
 tzdata==2024.2
+
+# Certificate Handling
+certifi==2024.8.30
+
+# URL Handling
+idna==3.10
 urllib3==2.2.3
