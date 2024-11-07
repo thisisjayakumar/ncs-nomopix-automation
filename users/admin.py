@@ -1,28 +1,23 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User
+from .models import User, Organization, AdSection
 
-class UserAdmin(BaseUserAdmin):
-    list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'created_at')
-    list_filter = ('is_staff', 'is_active')
 
-    fieldsets = (
-        (None, {'fields': ('username', 'password')}),
-        ('Personal info', {'fields': ('first_name', 'last_name', 'email')}),
-        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
-        ('Important dates', {'fields': ('last_login', 'created_at')}),
-    )
-
-    add_fieldsets = (
-        (None, {
-            'classes': ('wide',),
-            'fields': ('username', 'email', 'password1', 'password2')}
-        ),
-    )
-
-    search_fields = ('email', 'username')
-    ordering = ('email',)
-    filter_horizontal = ('groups', 'user_permissions')
+@admin.register(User)
+class UserAdmin(admin.ModelAdmin):
+    list_display = ('username', 'email', 'user_type', 'organisation', 'created_at', 'subscription')
+    list_filter = ('user_type', 'subscription', 'created_at')
+    search_fields = ('username', 'email')
     readonly_fields = ('created_at',)
 
-admin.site.register(User, UserAdmin)
+
+@admin.register(Organization)
+class OrganizationAdmin(admin.ModelAdmin):
+    list_display = ('name', 'uuid')
+    search_fields = ('name',)
+
+
+@admin.register(AdSection)
+class AdSectionAdmin(admin.ModelAdmin):
+    list_display = ('ad_name', 'url', 'ad_type', 'publisher')
+    list_filter = ('ad_type',)
+    search_fields = ('ad_name', 'publisher')
