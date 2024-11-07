@@ -10,7 +10,7 @@ class User(AbstractUser):
         max_length=50, choices=UserTypeChoices.choices,
         default=UserTypeChoices.INDIVIDUAL)
     organisation = models.ForeignKey(
-        "Organization", on_delete=models.CASCADE, related_name='organization_user',
+        "Organization", on_delete=models.CASCADE, related_name='organization_users',
         blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     subscription = models.CharField(
@@ -25,6 +25,9 @@ class Organization(models.Model):
     uuid = models.UUIDField(unique=True, null=True, editable=False, default=uuid.uuid4)
     name = models.CharField(max_length=30)
 
+    def __str__(self):
+        return self.name
+
 
 class AdSection(models.Model):
     ad_name = models.CharField(max_length=100)
@@ -32,3 +35,6 @@ class AdSection(models.Model):
     ad_type = models.CharField(
         max_length=50, choices=AdTypeChoices.choices)
     publisher = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.ad_name

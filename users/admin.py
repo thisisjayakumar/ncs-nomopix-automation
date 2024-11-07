@@ -4,10 +4,9 @@ from .models import User, Organization, AdSection
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
-    list_display = ('username', 'email', 'user_type', 'organisation', 'created_at', 'subscription')
-    list_filter = ('user_type', 'subscription', 'created_at')
-    search_fields = ('username', 'email')
-    readonly_fields = ('created_at',)
+    list_display = ('username', 'email', 'user_type', 'subscription')
+    list_filter = ('user_type', 'subscription')
+    raw_id_fields = ('organisation', )
 
 
 @admin.register(Organization)
