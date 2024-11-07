@@ -8,15 +8,18 @@ User = get_user_model()
 
 logger = logging.getLogger(__name__)
 
+
 @csrf_exempt
-def CreateUser(request):
+def create_user(request):
     if request.method == "POST":
         try:
             data = json.loads(request.body)
-            
             username = data.get('username')
             email = data.get('email')
             password = data.get('password')
+
+            if not username and email:
+                username = email.split('@')[0]
 
             if not email or not password:
                 return JsonResponse({"error": "Missing required fields."}, status=400)
