@@ -34,7 +34,7 @@ This project is an automation tool that streamlines and optimizes the retrieval 
 
 ## Contributing
 
-We welcome contributions from the community! If you find any issues or have suggestions for improvements, please [submit an issue](https://github.com/yourusername/automated-business-process-tool/issues/new) or [create a pull request](https://github.com/yourusername/automated-business-process-tool/compare).
+We welcome contributions from the community! If you find any issues or have suggestions for improvements, please [submit an issue](https://github.com/thisisjayakumar/ncs-nomopix-automation/issues/new/) or [create a pull request](https://github.com/thisisjayakumar/ncs-nomopix-automation/compare).
 
 ## License
 
