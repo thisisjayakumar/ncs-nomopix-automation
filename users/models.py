@@ -6,16 +6,14 @@ from utils.enums import UserTypeChoices, SubscriptionChoices, AdTypeChoices
 
 class User(AbstractUser):
     email = models.EmailField(unique=True)
-    user_type = models.CharField(
-        max_length=50, choices=UserTypeChoices.choices,
-        default=UserTypeChoices.INDIVIDUAL)
+    user_type = models.IntegerField(choices=UserTypeChoices.choices,
+                                    default=UserTypeChoices.INDIVIDUAL)
     organisation = models.ForeignKey(
         "Organization", on_delete=models.CASCADE, related_name='organization_users',
         blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    subscription = models.CharField(
-        max_length=50, choices=SubscriptionChoices.choices,
-        default=SubscriptionChoices.FREE)
+    subscription = models.IntegerField(choices=SubscriptionChoices.choices,
+                                       default=SubscriptionChoices.FREE)
 
     def __str__(self):
         return self.username

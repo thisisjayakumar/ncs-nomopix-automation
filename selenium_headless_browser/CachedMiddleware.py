@@ -7,8 +7,8 @@ class CachePostRequestsMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        if request.method == 'POST' and request.path in ['run-query/search-query/']:
-            match_code = request.headers.get('matchCode', None)
+        if request.method == 'POST' and request.path in ['/run-query/search-query/']:
+            match_code = request.headers.get('match_code', None)
             cache_key = f"post_cache_{hash((request.body, match_code))}"
             cached_response = cache.get(cache_key)
 
