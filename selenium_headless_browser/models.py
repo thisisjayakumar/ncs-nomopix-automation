@@ -16,5 +16,3 @@ class CodeLogHistory(BaseClass):
     major_code = models.CharField(max_length=100)
     result_json = models.JSONField()
 
-    def __str__(self):
-        return f"Log for Major Code {self.major_code} by User {self.user}"

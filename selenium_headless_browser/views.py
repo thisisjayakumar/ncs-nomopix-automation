@@ -23,16 +23,24 @@ class MedicareSearchView(APIView):
             input_numbers = body.get('input_numbers', [])
             match_code = request.query_params.get('match_code', 'false').lower() == 'true'
             start_time = time.perf_counter()
-            user = request.user if request.user.is_authenticated else None
+            user = request.user
             results = process_codes_concurrent(input_numbers)
-            if user:
-                for result in results.get('results', []):
-                    major_code = result.get('input_number')
-                    CodeLogHistory.objects.create(
-                        user=user,
-                        major_code=major_code,
-                        result_json=result
-                    )
+            print("results", results)
+            if user.username:
+                # Access the first dictionary in the results list
+                if results and isinstance(results, list):
+                    result_data = results[0]
+                    logged_major_codes = set()
+
+                    for result in result_data.get('results', []):
+                        major_code = result_data.get('input_number')
+                        if major_code not in logged_major_codes:
+                            CodeLogHistory.objects.create(
+                                user=user,
+                                major_code=major_code,
+                                result_json=result_data
+                            )
+                            logged_major_codes.add(major_code)
 
             if match_code:
                 results = filter_major_minor_codes(results, input_numbers)
