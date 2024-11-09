@@ -21,7 +21,7 @@ class MedicareSearchView(APIView):
         try:
             body = request.data
             input_numbers = body.get('input_numbers', [])
-            match_code = request.query_params.get('matchCode', 'false').lower() == 'true'
+            match_code = request.query_params.get('match_code', 'false').lower() == 'true'
             start_time = time.perf_counter()
             user = request.user if request.user.is_authenticated else None
             results = process_codes_concurrent(input_numbers)
