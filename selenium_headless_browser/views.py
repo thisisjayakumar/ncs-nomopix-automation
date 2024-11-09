@@ -6,6 +6,8 @@ from rest_framework.exceptions import ParseError
 import json
 import time
 import logging
+
+from selenium_headless_browser.models import CodeLogHistory
 from selenium_headless_browser.utils import process_codes_concurrent, filter_major_minor_codes
 
 logger = logging.getLogger(__name__)
@@ -21,7 +23,16 @@ class MedicareSearchView(APIView):
             input_numbers = body.get('input_numbers', [])
             match_code = request.query_params.get('matchCode', 'false').lower() == 'true'
             start_time = time.perf_counter()
+            user = request.user if request.user.is_authenticated else None
             results = process_codes_concurrent(input_numbers)
+            if user:
+                for result in results.get('results', []):
+                    major_code = result.get('input_number')
+                    CodeLogHistory.objects.create(
+                        user=user,
+                        major_code=major_code,
+                        result_json=result
+                    )
 
             if match_code:
                 results = filter_major_minor_codes(results, input_numbers)
