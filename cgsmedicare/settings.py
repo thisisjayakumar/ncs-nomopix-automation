@@ -67,7 +67,7 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'cgsmedicare.urls'
 
 # CORS_ALLOWED_ORIGINS = json.loads(os.environ.get("CORS_ALLOWED_ORIGINS", "[]"))
-CORS_ALLOWED_ORIGINS=["http://localhost:3000", "https://ncsautomation.netlify.app"]
+CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_ORIGINS")
 
 TEMPLATES = [
     {
@@ -168,7 +168,6 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = 'staticfiles/'
-# STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
