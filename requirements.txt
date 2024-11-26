@@ -26,7 +26,7 @@ tzdata==2024.2
 urllib3==2.2.3
 webdriver-manager
 websocket-client==1.8.0
-Werkzeug==3.0.4
+Werkzeug==3.0.6
 wsproto==1.2.0
 zope.event==5.0
 zope.interface==7.1.0
