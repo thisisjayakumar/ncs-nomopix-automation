@@ -1,42 +1,84 @@
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth import get_user_model
-import json
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth import get_user_model, authenticate
 import logging
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
 
 User = get_user_model() 
 
 logger = logging.getLogger(__name__)
 
 
-@csrf_exempt
-def create_user(request):
-    if request.method == "POST":
+class SignupView(APIView):
+    def post(self, request):
+        data = request.data
+        username = data.get("username")
+        email = data.get("email")
+        password = data.get("password")
+
+        if not email or not password:
+            return Response({"error": "Email and password are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if User.objects.filter(email=email).exists():
+            return Response({"error": "User with this email already exists."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not username:
+            username = email.split("@")[0]
+
+        user = User.objects.create(
+            username=username,
+            email=email,
+            password=make_password(password)
+        )
+
+        return Response(
+            {"message": "User created successfully.", "user_id": user.id},
+            status=status.HTTP_201_CREATED
+        )
+
+
+class LoginView(APIView):
+    def post(self, request):
+        username = request.data.get("username")
+        password = request.data.get("password")
+
+        if not username or not password:
+            return Response({"error": "Email and password are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = authenticate(request, username=username, password=password)
+
+        if user is None:
+            return Response({"error": "Invalid email or password."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        refresh = RefreshToken.for_user(user)
+        return Response(
+            {
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
+                "username": user.username,
+                "email": user.email,
+            },
+            status=status.HTTP_200_OK
+        )
+
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
         try:
-            data = json.loads(request.body)
-            username = data.get('username')
-            email = data.get('email')
-            password = data.get('password')
+            token = request.headers.get("Authorization")
+            refresh_token = token.split(" ")[1]
 
-            if not username and email:
-                username = email.split('@')[0]
+            if not refresh_token:
+                return Response({"error": "Refresh token is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-            if not email or not password:
-                return JsonResponse({"error": "Missing required fields."}, status=400)
-            
-            if User.objects.filter(email=email).exists():
-                return JsonResponse({"error": "User with this email already exists."}, status=400)
-            
-            user = User.objects.create_user(username=username, email=email, password=password)
-            
-            return JsonResponse({"message": "User created successfully.", "user_id": user.id}, status=201)
-        
-        except json.JSONDecodeError:
-            logger.exception("Invalid JSON input")
-            return JsonResponse({"error": "Invalid JSON."}, status=400)
-        
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+
+            return Response({"message": "Successfully logged out."}, status=status.HTTP_205_RESET_CONTENT)
         except Exception as e:
-            logger.exception(f"Error occurred while creating user: {e}")
-            return JsonResponse({"error": "Something went wrong."}, status=500)
-    
-    return JsonResponse({"error": "Invalid request method."}, status=405)
+            return Response({"error": "Invalid token or token already blacklisted."}, status=status.HTTP_400_BAD_REQUEST)
