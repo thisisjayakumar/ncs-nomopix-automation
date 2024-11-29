@@ -25,7 +25,6 @@ class MedicareSearchView(APIView):
             start_time = time.perf_counter()
             user = request.user
             results = process_codes_concurrent(input_numbers)
-            print("results", results)
             if user.username:
                 # Access the first dictionary in the results list
                 if results and isinstance(results, list):

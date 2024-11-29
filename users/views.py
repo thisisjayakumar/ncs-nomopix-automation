@@ -1,15 +1,54 @@
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import get_user_model, authenticate
 import logging
-from rest_framework import status
+from rest_framework import status, viewsets, serializers
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
+from users.serializers import UserSerializer
+from django.contrib.auth.password_validation import validate_password
 
-User = get_user_model() 
-
+User = get_user_model()
 logger = logging.getLogger(__name__)
+
+
+class UserPasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True, validators=[validate_password])
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return User.objects.filter(id=self.request.user.id)
+
+    def list(self, request, *args, **kwargs):
+        try:
+            serializer = self.get_serializer(request.user)
+            return Response(serializer.data)
+        except Exception as e:
+            return Response(
+                {'error': 'Failed to fetch user details'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    @action(detail=False, methods=['post'], serializer_class=UserPasswordSerializer)
+    def change_password(self, request):
+        serializer = UserPasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            user = request.user
+            if user.check_password(serializer.data['old_password']):
+                user.set_password(serializer.data['new_password'])
+                user.save()
+                return Response({'message': 'Password updated successfully'},
+                                status=status.HTTP_200_OK)
+            return Response({'error': 'Invalid old password'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class SignupView(APIView):
