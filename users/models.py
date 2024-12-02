@@ -16,6 +16,7 @@ class User(AbstractUser):
     created_at = models.DateTimeField(auto_now_add=True)
     subscription = models.IntegerField(choices=SubscriptionChoices.choices,
                                        default=SubscriptionChoices.FREE)
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.username
@@ -47,8 +48,6 @@ class UserFeedback(models.Model):
     name = models.CharField(max_length=100)
     organisation = models.CharField(max_length=200, blank=True)
     feedback = models.TextField()
-    is_active = models.BooleanField(default=True)
-    is_admin = models.BooleanField(default=False)
     rating = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
 

@@ -1,17 +1,18 @@
-from django.contrib.auth.hashers import make_password
-from django.contrib.auth import get_user_model, authenticate
 import logging
+
+from django.contrib.auth import get_user_model, authenticate
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth.password_validation import validate_password
 from rest_framework import status, viewsets, serializers
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from users.models import UserFeedback
-from users.serializers import UserSerializer, FeedbackSerializer, FeedbackListSerializer
-from django.contrib.auth.password_validation import validate_password
+from users.serializers import UserSerializer, FeedbackListSerializer, FeedbackSerializer
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -127,6 +128,9 @@ class LogoutView(APIView):
 
 
 class FeedbackAPIView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
     def post(self, request):
         serializer = FeedbackSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
@@ -146,4 +150,7 @@ class FeedbackAdminViewSet(viewsets.ReadOnlyModelViewSet):
         if self.request.user.user_type != 3:
             raise PermissionDenied("Only admins can access this data")
         return UserFeedback.objects.all().order_by('-created_at')
+
+
+
 

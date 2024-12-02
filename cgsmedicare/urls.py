@@ -19,7 +19,7 @@ from django.urls import path, include
 from django.views.generic import RedirectView
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from users.views import UserViewSet, FeedbackAdminViewSet
+from users.views import UserViewSet, FeedbackAdminViewSet, FeedbackAPIView
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet, basename='user')
@@ -30,9 +30,10 @@ urlpatterns = [
     path('', RedirectView.as_view(url='/admin/', permanent=False)),
     path('api/v1/', include([
         path('', include(router.urls)),
-        path('users/', include('users.urls')),
-        path('run-query/', include('selenium_headless_browser.urls')),
     ])),
+    path('users/', include('users.urls')),
+    path('run-query/', include('selenium_headless_browser.urls')),
+    path('api/v2/feedback/', FeedbackAPIView.as_view(), name='feedback-api'),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]

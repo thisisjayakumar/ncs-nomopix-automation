@@ -24,22 +24,37 @@ class MedicareSearchView(APIView):
             match_code = request.query_params.get('match_code', 'false').lower() == 'true'
             start_time = time.perf_counter()
             user = request.user
-            results = process_codes_concurrent(input_numbers)
-            if user.username:
-                # Access the first dictionary in the results list
-                if results and isinstance(results, list):
-                    result_data = results[0]
-                    logged_major_codes = set()
+            results = []
+            if user.username and user.subscription in [2, 3]:
+                cached_results = []
+                uncached_numbers = []
 
-                    for result in result_data.get('results', []):
-                        major_code = result_data.get('input_number')
-                        if major_code not in logged_major_codes:
+                for number in input_numbers:
+                    try:
+                        log_entry = CodeLogHistory.objects.get(
+                            user=user,
+                            major_code=number
+                        )
+                        cached_results.append(log_entry.result_json)
+                    except CodeLogHistory.DoesNotExist:
+                        uncached_numbers.append(number)
+
+                if uncached_numbers:
+                    new_results = process_codes_concurrent(uncached_numbers)
+                    results = cached_results + new_results
+
+                    for result in new_results:
+                        if isinstance(result, dict):
+                            major_code = result.get('input_number')
                             CodeLogHistory.objects.create(
                                 user=user,
                                 major_code=major_code,
-                                result_json=result_data
+                                result_json=result
                             )
-                            logged_major_codes.add(major_code)
+                else:
+                    results = cached_results
+            else:
+                results = process_codes_concurrent(input_numbers)
 
             if match_code:
                 results = filter_major_minor_codes(results, input_numbers)

@@ -13,6 +13,11 @@ class BaseClass(models.Model):
 
 class CodeLogHistory(BaseClass):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_logs')
-    major_code = models.CharField(max_length=100)
+    major_code = models.CharField(max_length=100, db_index=True)
     result_json = models.JSONField()
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['user', 'major_code']),
+        ]
 
