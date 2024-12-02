@@ -19,18 +19,21 @@ from django.urls import path, include
 from django.views.generic import RedirectView
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from users.views import UserViewSet
+from users.views import UserViewSet, FeedbackAdminViewSet
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet, basename='user')
+router.register(r'admin/feedbacks', FeedbackAdminViewSet, basename='admin-feedback')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', RedirectView.as_view(url='/admin/', permanent=False)),
-    path('api/', include(router.urls)),
-    path('run-query/', include('selenium_headless_browser.urls')),
+    path('api/v1/', include([
+        path('', include(router.urls)),
+        path('users/', include('users.urls')),
+        path('run-query/', include('selenium_headless_browser.urls')),
+    ])),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('user/', include('users.urls')),
 ]
 

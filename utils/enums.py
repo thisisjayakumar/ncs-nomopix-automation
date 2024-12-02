@@ -5,6 +5,7 @@ from django.utils.translation import gettext_lazy as _
 class UserTypeChoices(models.IntegerChoices):
     INDIVIDUAL = 1, _("INDIVIDUAL")
     ORGANIZATION = 2, _("ORGANIZATION")
+    ADMIN = 3, _("ADMIN")
 
 
 class SubscriptionChoices(models.IntegerChoices):
