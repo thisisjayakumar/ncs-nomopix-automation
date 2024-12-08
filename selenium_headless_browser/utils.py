@@ -113,38 +113,3 @@ def process_codes_concurrent(input_numbers: List[str]) -> List[Dict[str, Any]]:
                 })
 
     return results
-
-
-def filter_major_minor_codes(results: List[Dict[str, Any]], input_numbers: List[str]) -> List[Dict[str, Any]]:
-    """Filter results based on major/minor code matching logic."""
-    filtered_results = []
-    input_numbers_str = [str(num) for num in input_numbers]
-
-    for result in results:
-        major_code = str(result['input_number'])
-        result_data = result['results']
-        headers = result.get('headers', [])
-
-        if not result_data or result_data[0] == ["Code Not Found"]:
-            continue
-
-        matching_rows = []
-        for row in result_data:
-            if len(row) > 1:
-                minor_code = row[1]
-                if minor_code in input_numbers_str:
-                    matching_rows.append({
-                        'major_code': major_code,
-                        'minor_code': minor_code,
-                        'data': row
-                    })
-
-        if matching_rows:
-            filtered_results.append({
-                'input_number': major_code,
-                'headers': headers,
-                'results': matching_rows
-            })
-
-    return filtered_results
-

@@ -21,7 +21,6 @@ class MedicareSearchView(APIView):
         try:
             body = request.data
             input_numbers = body.get('input_numbers', [])
-            match_code = request.query_params.get('match_code', 'false').lower() == 'true'
             start_time = time.perf_counter()
             user = request.user
             results = []
@@ -56,8 +55,6 @@ class MedicareSearchView(APIView):
             else:
                 results = process_codes_concurrent(input_numbers)
 
-            if match_code:
-                results = filter_major_minor_codes(results, input_numbers)
             elapsed_time = time.perf_counter() - start_time
 
             return JsonResponse({
