@@ -8,7 +8,7 @@ import time
 import logging
 
 from selenium_headless_browser.models import CodeLogHistory
-from selenium_headless_browser.utils import process_codes_concurrent, filter_major_minor_codes
+from selenium_headless_browser.utils import process_codes_concurrent
 
 logger = logging.getLogger(__name__)
 
