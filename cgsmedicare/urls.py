@@ -37,6 +37,6 @@ urlpatterns = [
     path('api/v2/feedback/', FeedbackAPIView.as_view(), name='feedback-api'),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('api/v2/internal/cancel-tests/', CancelTestsView.as_view(), name='cancel-tests'),
+    path('api/v2/internal/canceltests/', CancelTestsView.as_view(), name='cancel-tests'),
 ]
 
