@@ -1,4 +1,5 @@
 from django.http import StreamingHttpResponse, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -189,7 +190,8 @@ class MedicareSearchView(APIView):
         return JsonResponse({'error': 'Only POST method is allowed'}, status=405)
 
 
-class CancelTestsView(View):
+class CancelTestsView(APIView):
+    @csrf_exempt
     def post(self, request):
         load_env()
 
