@@ -79,28 +79,34 @@ TEMPLATES = [
     },
 ]
 
+LOGGING_ENABLED_SERVER = os.environ.get('LOGGING_ENABLED', 'False').lower() == 'true'
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'handlers': {
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': '/var/log/django/debug.log',
-        },
-        'console': {
-            'class': 'logging.StreamHandler',
-            'level': 'DEBUG',
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['file', 'console'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
-    },
 }
+
+if LOGGING_ENABLED_SERVER:
+    LOGGING.update({
+        'handlers': {
+            'file': {
+                'level': 'DEBUG',
+                'class': 'logging.FileHandler',
+                'filename': '/var/log/django/debug.log',
+            },
+            'console': {
+                'class': 'logging.StreamHandler',
+                'level': 'DEBUG',
+            },
+        },
+        'loggers': {
+            'django': {
+                'handlers': ['file', 'console'],
+                'level': 'DEBUG',
+                'propagate': True,
+            },
+        },
+    })
 
 WSGI_APPLICATION = 'cgsmedicare.wsgi.application'
 
