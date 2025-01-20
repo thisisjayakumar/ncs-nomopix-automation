@@ -9,6 +9,7 @@ import logging
 
 from selenium_headless_browser.models import CodeLogHistory
 from selenium_headless_browser.utils import process_codes_concurrent
+from .helpers import load_env, get_auth_token, save_auth_token, delete_test
 
 logger = logging.getLogger(__name__)
 
@@ -70,3 +71,41 @@ class MedicareSearchView(APIView):
 
     def get(self, request, *args, **kwargs):
         return JsonResponse({'error': 'Only POST method is allowed'}, status=405)
+
+
+class CancelTestsView(APIView):
+    def post(self, request):
+        load_env()
+
+        try:
+            data = json.loads(request.body)
+            test_ids = json.loads(data.get("testId", "[]"))
+            auth_token = data.get("authToken")
+
+            # Use stored auth token if not provided
+            if not auth_token:
+                auth_token = get_auth_token()
+                if not auth_token:
+                    return JsonResponse({"error": "No authToken provided."}, status=400)
+
+            if data.get("authToken"):
+                save_auth_token(auth_token)
+
+            results = {}
+            for test_id in test_ids:
+                response = delete_test(test_id, auth_token)
+                
+                if response.status_code != 200:
+                    return JsonResponse({"error": "Please provide a new authToken."}, status=403)
+
+                results[test_id] = {
+                    "status": response.status_code,
+                    "body": response 
+                }
+
+            return JsonResponse(results, status=200)
+
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON format."}, status=400)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
